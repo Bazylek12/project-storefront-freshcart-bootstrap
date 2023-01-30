@@ -1,0 +1,27 @@
+<section class="lg-14 my-8">
+  <div class="container">
+    <div class="row">
+      <aside class="col-12 col-lg-3 col-md-4 mb-4 mb-md-0 px-5">
+        <h5 class="mb-3">Categories</h5>
+        <ul class="nav nav-category" id="categoryCollapseMenu">
+          <li *ngFor="let category of categoriesList$ | async" class="nav-item border-bottom w-100 collapsed">
+            <a [routerLink]="['/categories',category.id]" class="nav-link">{{ category.name }}
+              <i class="feather-icon icon-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </aside>
+      <ng-container *ngIf="category$ | async as item">
+        <!-- card -->
+        <div class="col-lg-9 col-md-12 px-10">
+          <!-- card body -->
+          <div class="card mb-4 bg-light border-0">
+            <div class=" card-body p-9">
+              <h2 class="mb-0 fs-1">{{ item.name }}</h2>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</section>
