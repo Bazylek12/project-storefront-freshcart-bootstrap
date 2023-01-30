@@ -20,7 +20,7 @@
               <h2 class="mb-0 fs-1">{{ item.name }}</h2>
             </div>
           </div>
-          <ng-container *ngIf="productsList$ | async as productList">
+          <ng-container *ngIf="paginatedProducts$ | async as productList">
             <div class="mb-3 d-flex justify-content-between">
               <p class="mb-0"><span class="text-dark">{{ productList.length }} </span> Products found </p>
               <select class="form-select w-25 h-50" [formControl]="sortValue">
@@ -32,7 +32,7 @@
                 </option>
               </select>
             </div>
-            <div class="card card-product mb-5" *ngFor="let product of productsList$ | async">
+            <div class="card card-product mb-5" *ngFor="let product of paginatedProducts$ | async">
               <div class="card-body">
                 <div class=" row align-items-center">
                   <div class="col-md-4 col-12">
@@ -55,7 +55,8 @@
                       <small class="text-warning">
                         <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi"
                            [ngClass]="starClass(product.ratingValue, star)"></i>
-                      </small><span class="text-muted small">{{ product.ratingValue }} ({{ product.ratingCount }})</span>
+                      </small><span class="text-muted small">{{ product.ratingValue }} ({{ product.ratingCount }}
+                      )</span>
                     </div>
                     <div class="mt-6">
                       <div>
@@ -63,6 +64,36 @@
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="queryParams$ | async as params">
+              <div *ngIf="productList.length > 0" class="mt-5 row row-cols-2">
+                <div class="col">
+                  <h2 class="fs-6 mb-1">Limit</h2>
+                  <nav class="d-flex gap-2">
+                    <ul class="pagination " *ngFor="let item of pageSizes$ | async">
+                      <li class="page-item" (click)="onPageSizeChange(item)"
+                          [ngClass]="{active: item === params.pageSize}">
+                        <a class="page-link">
+                          {{ item }}
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+                <div class="col">
+                  <h2 class="fs-6 mb-1">Pagination</h2>
+                  <nav class="d-flex gap-2">
+                    <ul class="pagination " *ngFor="let item of pagesList$ | async">
+                      <li class="page-item">
+                        <a class="page-link" (click)="onPageNumberChange(item)"
+                           [ngClass]="{active: item === params.pageNumber}">
+                          {{ item }}
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
                 </div>
               </div>
             </div>
