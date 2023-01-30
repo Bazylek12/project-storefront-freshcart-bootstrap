@@ -20,6 +20,45 @@
               <h2 class="mb-0 fs-1">{{ item.name }}</h2>
             </div>
           </div>
+          <ng-container *ngIf="productsList$ | async as productList">
+            <div class="mb-3">
+              <p class="mb-0"><span class="text-dark">{{ productList.length }} </span> Products found </p>
+            </div>
+            <div class="card card-product mb-5" *ngFor="let product of productsList$ | async">
+              <div class="card-body">
+                <div class=" row align-items-center">
+                  <div class="col-md-4 col-12">
+                    <div class="text-center position-relative ">
+                      <a>
+                        <img [src]="product.imageUrl" [alt]="product.name" class="mb-3 img-fluid">
+                      </a>
+                    </div>
+                  </div>
+                  <div class="col-md-8 col-12 flex-grow-1">
+                    <ng-container>
+                      <div class="text-small mb-1">
+                        <a class="text-decoration-none text-muted"><small>{{ item.name }}</small></a>
+                      </div>
+                    </ng-container>
+                    <h2 class="fs-6">
+                      <a class="text-inherit text-decoration-none">{{ product.name }}</a>
+                    </h2>
+                    <div>
+                      <small class="text-warning">
+                        <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi"
+                           [ngClass]="starClass(product.ratingValue, star)"></i>
+                      </small><span class="text-muted small">{{ product.ratingValue }} ({{ product.ratingCount }})</span>
+                    </div>
+                    <div class="mt-6">
+                      <div>
+                        <span class="text-dark">{{ product.price | currency : 'USD' : 'symbol' : '1.0-0' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
         </div>
       </ng-container>
     </div>
