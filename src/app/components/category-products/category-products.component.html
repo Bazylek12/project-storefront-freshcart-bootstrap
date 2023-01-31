@@ -2,7 +2,6 @@
   <div class="container">
     <div class="row">
       <aside class="col-12 col-lg-3 col-md-4 mb-4 mb-md-0 px-5">
-
         <h5 class="mb-3">Categories</h5>
         <ul class="nav nav-category" id="categoryCollapseMenu">
           <li *ngFor="let category of categoriesList$ | async" class="nav-item border-bottom w-100 collapsed">
@@ -11,6 +10,21 @@
             </a>
           </li>
         </ul>
+        <ng-container [formGroup]="searchByStore">
+          <div class="mb-8">
+            <h5 class="mb-3">Stores</h5>
+            <div>
+              <input type="search" placeholder="Search by store" class="form-control mb-3" formControlName="searchStore">
+            </div>
+            <form formGroupName="store" class="form-check mb-2">
+              <div *ngFor="let store of searchStores$ | async">
+                <input [id]="store.id" class="form-check-input" type="checkbox" [value]="store"
+                       [formControlName]="store.id">
+                <label [for]="store.id" class="form-check-label">{{store.name}}</label>
+              </div>
+            </form>
+          </div>
+        </ng-container>
         <h5 class="mb-3 mt-5">Price</h5>
         <form [formGroup]="sideSortForm">
           <input class="form-control mb-3" type="text" formControlName="priceFrom" placeholder="Price From">

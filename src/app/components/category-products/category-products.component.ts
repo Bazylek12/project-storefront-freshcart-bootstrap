@@ -1,14 +1,15 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, combineLatest, of, shareReplay, startWith, take, tap } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-import { CategoryModel } from '../../models/category.model';
-import { SortingOptionModel } from '../../models/sorting-option.model';
-import { ProductModel } from '../../models/product.model';
-import { CategoriesService } from '../../services/categories.service';
-import { ProductsService } from '../../services/products.service';
+import {ChangeDetectionStrategy, Component, ViewEncapsulation} from '@angular/core';
+import {FormControl, FormGroup} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Observable, combineLatest, of, shareReplay, startWith, take, tap, debounceTime} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
+import {CategoryModel} from '../../models/category.model';
+import {SortingOptionModel} from '../../models/sorting-option.model';
+import {ProductModel} from '../../models/product.model';
+import {CategoriesService} from '../../services/categories.service';
+import {ProductsService} from '../../services/products.service';
 import {StoresService} from "../../services/stores.service";
+import {StoreModel} from "../../models/store.model";
 
 interface queryModel {
   pageSize: number,
@@ -42,14 +43,15 @@ export class CategoryProductsComponent {
   });
 
   readonly searchByStore: FormGroup = new FormGroup({
-    store: new FormControl(),
+    store: new FormGroup({}),
+    searchStore: new FormControl()
   })
 
   readonly sortingOptions$: Observable<SortingOptionModel[]> = of([
-    { name: 'Featured', value: 'featureValueDescending' },
-    { name: 'Price: Low to High', value: 'priceAscending' },
-    { name: 'Price: High to low', value: 'priceDescending' },
-    { name: 'Avg. Rating', value: 'ratingValueDescending' }
+    {name: 'Featured', value: 'featureValueDescending'},
+    {name: 'Price: Low to High', value: 'priceAscending'},
+    {name: 'Price: High to low', value: 'priceDescending'},
+    {name: 'Avg. Rating', value: 'ratingValueDescending'}
   ])
 
   readonly productsList$: Observable<ProductModel[]> = combineLatest([
@@ -75,12 +77,12 @@ export class CategoryProductsComponent {
     this.queryParams$,
   ]).pipe(
     map(([products, params]) => {
-      const pages: number[] = [];
-      for (let i = 1; i <= Math.ceil(products.length / params.pageSize); i++) {
-        pages.push(i);
+        const pages: number[] = [];
+        for (let i = 1; i <= Math.ceil(products.length / params.pageSize); i++) {
+          pages.push(i);
+        }
+        return pages;
       }
-      return pages;
-    }
     ),
   )
   readonly paginatedProducts$: Observable<ProductModel[]> = combineLatest([
@@ -94,7 +96,7 @@ export class CategoryProductsComponent {
 
   readonly sortedProducts$: Observable<ProductModel[]> = combineLatest([
     this.paginatedProducts$,
-    this.sideSortForm.valueChanges.pipe(startWith({ priceFrom: 0, priceTo: 9999, rating: 0}))
+    this.sideSortForm.valueChanges.pipe(startWith({priceFrom: 0, priceTo: 9999, rating: 0}))
   ]).pipe(
     map(([products, form]) =>
       products
@@ -103,14 +105,27 @@ export class CategoryProductsComponent {
     )
   )
 
-  // readonly searchStores$: Observable<StoreModel[]> = combineLatest([
-  //   this.searchByStore,
-  //   this._storesService.getAllStores(),
-  // ])
+  readonly searchStores$: Observable<StoreModel[]> = combineLatest([
+    this.searchByStore.valueChanges.pipe(
+      map((form) => form.searchStore),
+      debounceTime(1000),
+      startWith(''),
+      shareReplay(1)
+    ),
+    this._storesService.getAllStores(),
+  ]).pipe(
+    map(([form, stores]) =>
+      form ? stores.filter(store => store.name?.toLowerCase().includes(form.toLowerCase())) : stores
+    ),
+    tap(form => {
+      this._createFormControls(form)
+    }),
+  )
 
   constructor(private _categoriesService: CategoriesService, private _activatedRoute: ActivatedRoute,
-    private _productsService: ProductsService, private _router: Router, private _storesService: StoresService) {
+              private _productsService: ProductsService, private _router: Router, private _storesService: StoresService) {
   }
+
   onPageNumberChange(pageNumber: number): void {
     this.queryParams$.pipe(
       take(1),
@@ -170,4 +185,8 @@ export class CategoryProductsComponent {
       });
   }
 
+  private _createFormControls(form: StoreModel[]) {
+    const group: FormGroup = this.searchByStore.get('store') as FormGroup;
+    form.forEach(store => group.addControl(store.id, new FormControl(false)))
+  }
 }
