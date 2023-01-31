@@ -10,6 +10,11 @@
             </a>
           </li>
         </ul>
+        <h5 class="mb-3 mt-5">Price</h5>
+        <form [formGroup]="sideSortForm">
+          <input class="form-control mb-3" type="text" formControlName="priceFrom" placeholder="Price From">
+          <input class="form-control mb-3" type="text" formControlName="priceTo" placeholder="Price To">
+        </form>
       </aside>
       <ng-container *ngIf="category$ | async as item">
         <!-- card -->
@@ -20,7 +25,7 @@
               <h2 class="mb-0 fs-1">{{ item.name }}</h2>
             </div>
           </div>
-          <ng-container *ngIf="paginatedProducts$ | async as productList">
+          <ng-container *ngIf="sortedProducts$ | async as productList">
             <div class="mb-3 d-flex justify-content-between">
               <p class="mb-0"><span class="text-dark">{{ productList.length }} </span> Products found </p>
               <select class="form-select w-25 h-50" [formControl]="sortValue">
@@ -32,7 +37,7 @@
                 </option>
               </select>
             </div>
-            <div class="card card-product mb-5" *ngFor="let product of paginatedProducts$ | async">
+            <div class="card card-product mb-5" *ngFor="let product of sortedProducts$ | async">
               <div class="card-body">
                 <div class=" row align-items-center">
                   <div class="col-md-4 col-12">
