@@ -8,6 +8,7 @@ import { SortingOptionModel } from '../../models/sorting-option.model';
 import { ProductModel } from '../../models/product.model';
 import { CategoriesService } from '../../services/categories.service';
 import { ProductsService } from '../../services/products.service';
+import {StoresService} from "../../services/stores.service";
 
 interface queryModel {
   pageSize: number,
@@ -37,8 +38,12 @@ export class CategoryProductsComponent {
   readonly sideSortForm: FormGroup = new FormGroup({
     priceTo: new FormControl(),
     priceFrom: new FormControl(),
+    rating: new FormControl(),
   });
 
+  readonly searchByStore: FormGroup = new FormGroup({
+    store: new FormControl(),
+  })
 
   readonly sortingOptions$: Observable<SortingOptionModel[]> = of([
     { name: 'Featured', value: 'featureValueDescending' },
@@ -89,15 +94,22 @@ export class CategoryProductsComponent {
 
   readonly sortedProducts$: Observable<ProductModel[]> = combineLatest([
     this.paginatedProducts$,
-    this.sideSortForm.valueChanges.pipe(startWith({ priceFrom: 0, priceTo: 9999}))
+    this.sideSortForm.valueChanges.pipe(startWith({ priceFrom: 0, priceTo: 9999, rating: 0}))
   ]).pipe(
     map(([products, form]) =>
-      products.filter(product => (product.price >= form.priceFrom ?? 0) && (product.price <= form.priceTo ?? 0))
+      products
+        .filter(product => (product.price >= form.priceFrom ?? 0) && (product.price <= form.priceTo ?? 0))
+        .filter(product => form.rating ? product.ratingValue >= form.rating : product)
     )
   )
 
+  // readonly searchStores$: Observable<StoreModel[]> = combineLatest([
+  //   this.searchByStore,
+  //   this._storesService.getAllStores(),
+  // ])
+
   constructor(private _categoriesService: CategoriesService, private _activatedRoute: ActivatedRoute,
-    private _productsService: ProductsService, private _router: Router) {
+    private _productsService: ProductsService, private _router: Router, private _storesService: StoresService) {
   }
   onPageNumberChange(pageNumber: number): void {
     this.queryParams$.pipe(
